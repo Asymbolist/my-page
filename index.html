@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人博客</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #e5e7eb;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: #000;
+        }
+        .page-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background: #000;
+        }
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+            opacity: 0.25;
+            filter: blur(6px);
+            transform: scale(1.08);
+        }
+        .card {
+            background: rgba(13, 13, 13, 0.8);
+            backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .card-show {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease;
+        }
+        .avatar {
+            border: 3px solid rgba(255,255,255,0.15);
+            object-fit: cover;
+        }
+        .btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.16);
+            transform: translateY(-1px);
+        }
+        .input {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #fff;
+            outline: none;
+            width: 100%;
+        }
+        .tag {
+            background: rgba(255,255,255,0.07);
+            border-radius: 999px;
+            padding: 5px 12px;
+            font-size: 13px;
+        }
+        .music-btn {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #fff;
+        }
+        .music-btn:hover {
+            background: rgba(255,255,255,0.18);
+            transform: scale(1.05);
+        }
+        .to-top {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 40;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+        .to-top.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s ease;
+        }
+        .welcome-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .welcome-box {
+            background: rgba(20,20,20,0.92);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .welcome-poetry {
+            font-size: 15px;
+            color: #ccc;
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+        .welcome-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 10px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        .welcome-btn:hover {
+            background: rgba(255,255,255,0.18);
+        }
+        body::-webkit-scrollbar {
+            width: 6px;
+        }
+        body::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-bg"></div>
+<img class="bg-image" src="background.jpg" onerror="this.style.display='none'">
+
+<!-- 欢迎弹窗 -->
+<div class="welcome-modal" id="welcomeModal">
+    <div class="welcome-box">
+        <div class="text-xl font-bold mb-1">你好</div>
+        <div class="welcome-poetry">海内存知己，天涯若比邻。</div>
+        <button class="welcome-btn" id="closeWelcome">进入主页</button>
+    </div>
+</div>
+
+<!-- 导航 -->
+<div class="fixed top-0 left-0 w-full z-50 px-4 py-3 card">
+    <div class="max-w-3xl mx-auto flex justify-between items-center">
+        <div class="text-lg font-semibold">我的个人博客</div>
+        <div id="beijing-time" class="text-sm text-gray-300"></div>
+    </div>
+</div>
+
+<!-- 内容 -->
+<div class="max-w-3xl mx-auto px-4 pt-28 pb-20">
+
+    <!-- 个人卡片 -->
+    <div class="card p-8 mb-6 text-center">
+        <img src="https://picsum.photos/200/200" class="avatar w-28 h-28 rounded-full mx-auto mb-5">
+        
+        <h1 class="text-3xl font-bold mb-2">开发者</h1>
+        <p class="text-gray-400 mb-6 text-lg">专注 Python & HTML 开发</p>
+
+        <a href="https://github.com/" target="_blank" class="btn inline-flex items-center gap-2 px-6 py-3 rounded-full text-white mb-6">
+            <i class="fa-brands fa-github"></i> 访问我的 GitHub
+        </a>
+
+        <div class="flex justify-center gap-5 text-xl">
+            <a href="#" class="text-gray-300 hover:text-white"><i class="fa-brands fa-qq"></i></a>
+            <a href="#" class="text-gray-300 hover:text-white"><i class="fa-brands fa-weixin"></i></a>
+            <a href="#" class="text-gray-300 hover:text-white"><i class="fa-brands fa-bilibili"></i></a>
+            <a href="#" class="text-gray-300 hover:text-white"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+    </div>
+
+    <!-- 技术栈 -->
+    <div class="card p-6 mb-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-code"></i> 技术栈
+        </h2>
+        <div class="flex flex-wrap gap-2">
+            <span class="tag">Python</span>
+            <span class="tag">HTML</span>
+            <span class="tag">CSS</span>
+        </div>
+    </div>
+
+    <!-- 项目 -->
+    <div class="card p-6 mb-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-folder-open"></i> 我的项目
+        </h2>
+        <div class="space-y-3">
+            <a href="#" class="block p-4 bg-black/40 rounded-xl hover:bg-black/50 transition">
+                <div class="flex justify-between items-start">
+                    <h3 class="font-semibold text-lg">Python 工具开发</h3>
+                    <span class="text-yellow-400 text-sm"><i class="fa-solid fa-star mr-1"></i>0</span>
+                </div>
+                <p class="text-gray-400 text-sm mt-1">实用小工具</p>
+            </a>
+            <a href="#" class="block p-4 bg-black/40 rounded-xl hover:bg-black/50 transition">
+                <div class="flex justify-between items-start">
+                    <h3 class="font-semibold text-lg">个人博客主页</h3>
+                    <span class="text-yellow-400 text-sm"><i class="fa-solid fa-star mr-1"></i>0</span>
+                </div>
+                <p class="text-gray-400 text-sm mt-1">HTML + CSS 极简主页</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- 留言板 -->
+    <div class="card p-6">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-comment"></i> 留言板
+        </h2>
+        <input type="text" class="input mb-3" placeholder="写下你的留言...">
+        <button class="btn px-5 py-2 rounded-lg text-white mb-5 w-full">提交留言</button>
+        <div class="space-y-3">
+            <div class="p-4 bg-black/35 rounded-lg">界面很好看，支持！</div>
+            <div class="p-4 bg-black/35 rounded-lg">继续加油！</div>
+        </div>
+    </div>
+
+</div>
+
+<button class="to-top" id="toTop"><i class="fa-solid fa-arrow-up"></i></button>
+<div class="fixed bottom-8 right-8 z-50">
+    <button id="musicBtn" class="music-btn"><i class="fa-solid fa-play"></i></button>
+</div>
+<audio id="player">
+
+<script>
+    // 欢迎弹窗
+    const modal = document.getElementById('welcomeModal');
+    if (!localStorage.getItem('visited')) {
+        setTimeout(() => modal.classList.add('show'), 300);
+    }
+    document.getElementById('closeWelcome').onclick = () => {
+        modal.classList.remove('show');
+        localStorage.setItem('visited', '1');
+    };
+
+    // 北京时间
+    function updateBeijingTime() {
+        const now = new Date();
+        const opt = { timeZone:'Asia/Shanghai', hour12:false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' };
+        document.getElementById('beijing-time').innerText = now.toLocaleString('zh-CN', opt);
+    }
+    updateBeijingTime();
+    setInterval(updateBeijingTime, 1000);
+
+    // 音乐
+    const playlist = ['music1.mp3','music2.mp3','music3.mp3'];
+    let index = 0;
+    const player = document.getElementById('player');
+    const btn = document.getElementById('musicBtn');
+    const icon = btn.querySelector('i');
+    let isPlaying = false;
+
+    player.onerror = () => { icon.className = 'fa-solid fa-play'; isPlaying = false; };
+    player.addEventListener('ended', () => {
+        index = (index+1) % playlist.length;
+        player.src = playlist[index];
+        player.play().catch(()=>{});
+    });
+    btn.addEventListener('click', () => {
+        if (!isPlaying) {
+            player.src = playlist[index];
+            player.play().then(() => {
+                icon.className = 'fa-solid fa-pause';
+                isPlaying = true;
+            }).catch(()=>{});
+        } else {
+            player.pause();
+            icon.className = 'fa-solid fa-play';
+            isPlaying = false;
+        }
+    });
+
+    // 卡片动画
+    const cards = document.querySelectorAll('.card');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => e.isIntersecting && e.target.classList.add('card-show'));
+    }, { threshold: 0.1 });
+    cards.forEach(c => observer.observe(c));
+
+    // 回到顶部
+    const toTop = document.getElementById('toTop');
+    window.addEventListener('scroll', () => {
+        toTop.classList.toggle('show', window.scrollY > 400);
+    });
+    toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
+
+    // 点击烟花
+    document.addEventListener('click', e => {
+        const colors = ['#fff','#eee','#ccc'];
+        const col = colors[Math.floor(Math.random()*colors.length)];
+        for(let i=0;i<6;i++){
+            const dot = document.createElement('div');
+            dot.style.cssText = `
+                position:fixed; left:${e.pageX}px; top:${e.pageY}px;
+                width:3px; height:3px; background:${col};
+                border-radius:50%; z-index:999; pointer-events:none;
+                transform:translate(${Math.random()*30-15}px,${Math.random()*30-15}px);
+                opacity:1; transition:all 0.6s;
+            `;
+            document.body.appendChild(dot);
+            setTimeout(()=>{ dot.style.opacity=0; },10);
+            setTimeout(()=>dot.remove(),700);
+        }
+    });
+</script>
+
+</body>
+</html>
