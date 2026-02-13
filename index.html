@@ -270,14 +270,12 @@
 <audio id="player">
 
 <script>
-    // 欢迎弹窗
+    // 欢迎弹窗 —— 每次打开都显示
     const modal = document.getElementById('welcomeModal');
-    if (!localStorage.getItem('visited')) {
-        setTimeout(() => modal.classList.add('show'), 300);
-    }
+    setTimeout(() => modal.classList.add('show'), 300);
+
     document.getElementById('closeWelcome').onclick = () => {
         modal.classList.remove('show');
-        localStorage.setItem('visited', '1');
     };
 
     // 北京时间
